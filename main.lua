@@ -1,5 +1,6 @@
 Object = require 'libraries/classic'
-Table = require 'objects/Table'
+M = require 'libraries/moses'
+local Table = require 'objects/Table'
 
 -- global variable for debug displaying
 debug = {}

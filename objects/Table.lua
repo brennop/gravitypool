@@ -6,13 +6,22 @@ local start = {x = 0, y = 0}
 local final = {x = 0, y = 0}
 local playing = false
 local hit = false
-local force = 40
+local force = 100
+local n = 4
 
 function Table:new()
   world = love.physics.newWorld()
-  ball = Ball(world, 100, 100, 10)
-  ball2 = Ball(world, 200, 300, 10)
+  ball = Ball(world, love.graphics:getWidth() * 0.25, love.graphics:getHeight()/2, 10, 0.6)
 
+  balls = {}
+  local col = 1 -- current column
+  for i = 1, (n*n+n)/2, 1 do
+    local s = (col * (col+1))/2 -- triangular number (sum of n first number)
+    balls[i] = Ball(world, love.graphics:getWidth() * 0.65 + col * 18, love.graphics:getHeight()/2 + (i-s)*20 + (col-1)*10, 10, 1)
+    if s == i then col = col + 1 end -- increase column at column end
+  end
+
+  table.insert(balls, ball)
   -- bounds = {}
   -- bound.body = love.physics.newBody(world, love., 40) 
   -- bound.shape = love.physics.newEdgeShape(0, 0, 560, 40)
@@ -22,10 +31,20 @@ end
 function Table:update(dt)
   world:update(dt)
   ball:update(dt)
-  ball2:update(dt)
+  for _, b in ipairs(balls) do b:update(dt) end
 
-  ball.body:applyForce(gforce(ball.body, ball2.body))
-  ball2.body:applyForce(gforce(ball2.body, ball.body))
+  -- calculate gravity force for each ball
+  for i, b in ipairs(balls) do
+    local acc = {0, 0}
+    for j, otherBall in ipairs(balls) do
+      if i ~= j then
+        local force = gforce(b.body, otherBall.body)
+        acc[1] = acc[1] + force[1] 
+        acc[2] = acc[2] + force[2] 
+      end
+    end
+    b.body:applyForce(acc[1], acc[2])
+  end
 
   local mousePos = {}
   mousePos.x, mousePos.y = love.mouse.getPosition()
@@ -61,7 +80,7 @@ end
 
 function Table:draw()
   ball:draw()
-  ball2:draw()
+  for _, b in ipairs(balls) do b:draw() end
   if playing then love.graphics.line(start.x, start.y, final.x, final.y) end
 end
 
@@ -70,7 +89,7 @@ function hit(body)
 end
 
 function gforce(b1, b2)
-  local G = 500000
+  local G = 10000
   local r = {}
   r.x = b1:getX() - b2:getX()
   r.y = b1:getY() - b2:getY()
@@ -78,8 +97,7 @@ function gforce(b1, b2)
   local r_hat = {}
   r_hat.x, r_hat.y = r.x/mag, r.y/mag
   local force_mag = (G*b1:getMass()*b2:getMass()) / (mag*mag)
-  debug[1] = force_mag
-  return -force_mag*r_hat.x, -force_mag*r_hat.y
+  return {-force_mag*r_hat.x, -force_mag*r_hat.y}
 end
 
 
