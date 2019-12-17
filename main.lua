@@ -9,6 +9,7 @@ debug = {}
 function love.load()
   scene = Table()
   love.graphics.setColor(255, 255, 255)
+  love.graphics.setBackgroundColor(4/255, 0/255, 10/255, 1)
 end
 
 function love.update(dt)

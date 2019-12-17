@@ -1,4 +1,5 @@
 Ball = require 'objects/Ball'
+Blackhole = require 'objects/Blackhole'
 
 local Table = Object:extend()
 
@@ -11,18 +12,21 @@ local n = 4
 
 function Table:new()
   world = love.physics.newWorld()
-  ball = Ball(world, love.graphics:getWidth() * 0.25, love.graphics:getHeight()/2, 10, 0.6)
+  world:setCallbacks(beginContact, endContact, preSolve, postSolve)
+  ball = Ball(world, love.graphics:getWidth() * 0.25,
+  love.graphics:getHeight()/2, 10, 0.6, 'white')
 
-  balls = {}
+  bodies = {}
+  bodies[1] = ball
   local col = 1 -- current column
   for i = 1, (n*n+n)/2, 1 do
     local s = (col * (col+1))/2 -- triangular number (sum of n first number)
-    balls[i] = Ball(world, love.graphics:getWidth() * 0.65 + col * 18, love.graphics:getHeight()/2 + (i-s)*20 + (col-1)*10, 10, 1)
+    bodies[i+1] = Ball(world, love.graphics:getWidth() * 0.65 + col * 18,
+    love.graphics:getHeight()/2 + (i-s)*20 + (col-1)*10, 10, 1, 'red')
     if s == i then col = col + 1 end -- increase column at column end
   end
 
-  table.insert(balls, ball)
-
+  -- creates table boundaries
   bounds = {}
   local offset = {x=20, y=40}
   local boundPos = vector(offset.x, offset.y)
@@ -33,20 +37,24 @@ function Table:new()
     local newPos = boundPos + boundDir:permul(vector(love.graphics.getWidth() - 2*offset.x, love.graphics.getHeight() - 2*offset.y))
     bounds[i].shape = love.physics.newEdgeShape(boundPos.x, boundPos.y, newPos.x, newPos.y)
     bounds[i].fixture = love.physics.newFixture(bounds[i].body, bounds[i].shape)
+    bounds[i].fixture:setUserData('bound')
+    -- creates blackholes
+    table.insert(bodies, Blackhole(world, boundPos.x, boundPos.y, 20, 10))
     boundPos = newPos
     boundDir:rotateInplace(-math.pi/2)
   end
+
 end
 
 function Table:update(dt)
   world:update(dt)
   ball:update(dt)
-  for _, b in ipairs(balls) do b:update(dt) end
+  for _, b in ipairs(bodies) do b:update(dt) end
 
   -- calculate gravity force for each ball
-  for i, b in ipairs(balls) do
+  for i, b in ipairs(bodies) do
     local acc = {0, 0}
-    for j, otherBall in ipairs(balls) do
+    for j, otherBall in ipairs(bodies) do
       if i ~= j then
         local force = gforce(b.body, otherBall.body)
         acc[1] = acc[1] + force[1] 
@@ -89,11 +97,19 @@ function Table:update(dt)
 end
 
 function Table:draw()
-  for _, ball in ipairs(balls) do ball:draw() end
+  for _, ball in ipairs(bodies) do ball:draw() end
   for _, bound in ipairs(bounds) do 
+    love.graphics.setColor(255, 255, 255)
     love.graphics.line(bound.body:getWorldPoints(bound.shape:getPoints()))
   end
   if playing then love.graphics.line(start.x, start.y, final.x, final.y) end
+end
+
+function beginContact(a, b, coll)
+  if(a:getUserData() == 'red' and b:getUserData() == 'blackhole') then
+    -- a:getBody():destroy()
+    bodies = M.reject(bodies, function(b) return a:getBody() == b.body end)
+  end
 end
 
 function hit(body)
@@ -101,7 +117,7 @@ function hit(body)
 end
 
 function gforce(b1, b2)
-  local G = 10000
+  local G = 20000
   local r = {}
   r.x = b1:getX() - b2:getX()
   r.y = b1:getY() - b2:getY()
