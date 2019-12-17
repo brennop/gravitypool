@@ -6,7 +6,7 @@ local start = {x = 0, y = 0}
 local final = {x = 0, y = 0}
 local playing = false
 local hit = false
-local force = 100
+local force = 150
 local n = 4
 
 function Table:new()
@@ -22,10 +22,20 @@ function Table:new()
   end
 
   table.insert(balls, ball)
-  -- bounds = {}
-  -- bound.body = love.physics.newBody(world, love., 40) 
-  -- bound.shape = love.physics.newEdgeShape(0, 0, 560, 40)
-  -- bound.fixture = love.physics.newFixture(bound.body, bound.shape)
+
+  bounds = {}
+  local offset = {x=20, y=40}
+  local boundPos = vector(offset.x, offset.y)
+  local boundDir = vector(0, 1)
+  for i,_ in ipairs(M.range(4)) do
+    bounds[i] = {}
+    bounds[i].body = love.physics.newBody(world, 0, 0)
+    local newPos = boundPos + boundDir:permul(vector(love.graphics.getWidth() - 2*offset.x, love.graphics.getHeight() - 2*offset.y))
+    bounds[i].shape = love.physics.newEdgeShape(boundPos.x, boundPos.y, newPos.x, newPos.y)
+    bounds[i].fixture = love.physics.newFixture(bounds[i].body, bounds[i].shape)
+    boundPos = newPos
+    boundDir:rotateInplace(-math.pi/2)
+  end
 end
 
 function Table:update(dt)
@@ -79,8 +89,10 @@ function Table:update(dt)
 end
 
 function Table:draw()
-  ball:draw()
-  for _, b in ipairs(balls) do b:draw() end
+  for _, ball in ipairs(balls) do ball:draw() end
+  for _, bound in ipairs(bounds) do 
+    love.graphics.line(bound.body:getWorldPoints(bound.shape:getPoints()))
+  end
   if playing then love.graphics.line(start.x, start.y, final.x, final.y) end
 end
 
