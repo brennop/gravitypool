@@ -42,7 +42,7 @@ function Table:new()
     bounds[i].fixture = love.physics.newFixture(bounds[i].body, bounds[i].shape)
     bounds[i].fixture:setUserData('bound')
     -- creates blackholes
-    table.insert(bodies, Blackhole(world, boundPos.x + offset * boundDir.x + offset * boundDir.y, boundPos.y - offset * boundDir.x + offset * boundDir.y, 7, 3))
+    table.insert(bodies, Blackhole(world, boundPos.x + offset * boundDir.x + offset * boundDir.y, boundPos.y - offset * boundDir.x + offset * boundDir.y, 5, 2.5))
     boundPos = newPos
     boundDir:rotateInplace(-math.pi/2)
   end
