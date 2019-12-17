@@ -14,18 +14,19 @@ function love.load()
   love.graphics.setBackgroundColor(8/255, 2/255, 22/255, 1)
   bloom = moonshine(moonshine.effects.glow)
   bloom.glow.strength = 12
+  bloom.glow.min_luma = 0.4
   stars = {}
   for i = 1, nStars, 1 do
     stars[i] = {x = math.random(0, love.graphics:getWidth()), y = math.random(0, love.graphics:getHeight()), r = math.random()*1.5}
   end
   starCanvas = love.graphics.newCanvas()
   love.graphics.setCanvas(starCanvas)
-      love.graphics.setColor(1,1,1,0.7)
+      love.graphics.setColor(1, 1, 1, 0.75)
       for _,star in ipairs(stars) do
         love.graphics.circle("fill", star.x, star.y, star.r)
       end
   love.graphics.setCanvas()
-  bloom.disable("glow")
+  -- bloom.disable("glow")
 end
 
 function love.update(dt)

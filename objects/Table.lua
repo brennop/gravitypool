@@ -3,10 +3,12 @@ Blackhole = require 'objects/Blackhole'
 
 local Table = Object:extend()
 
-local start = {x = 0, y = 0}
-local final = {x = 0, y = 0}
+local start = vector(0, 0)
+local final = vector(0, 0)
 local playing = false
 local hit = false
+local pathSize = 8
+local pathStep = 0.4
 local force = 150
 local n = 4
 local score = {red = 0, yellow = 0}
@@ -47,6 +49,11 @@ function Table:new()
     boundDir:rotateInplace(-math.pi/2)
   end
 
+  -- create path on clicking
+  path = {}
+  for i = 1, pathSize, 1 do
+    path[i] = {x = 0, y = 0, r = 3}  
+  end
 end
 
 function Table:update(dt)
@@ -67,10 +74,8 @@ function Table:update(dt)
     b.body:applyForce(acc[1], acc[2])
   end
 
-  local mousePos = {}
-  mousePos.x, mousePos.y = love.mouse.getPosition()
-  local ballPos = {}
-  ballPos.x, ballPos.y = ball.body:getPosition()
+  local mousePos = vector(love.mouse.getPosition())
+  local ballPos = vector(ball.body:getPosition())
   local ballRad = ball.shape:getRadius()
   
   -- checks if player has clicked
@@ -79,6 +84,13 @@ function Table:update(dt)
     if playing then
       final = mousePos
       start = ballPos
+      for i, path in ipairs(path) do
+        path.x, path.y = ((ballPos - mousePos)*i*pathStep + ballPos):unpack()
+        if path.x < 0 then path.x = path.x * -1 end 
+        if path.y < 0 then path.y = path.y * -1 end 
+        if path.x > love.graphics:getWidth() then path.x = 2 * love.graphics:getWidth() - path.x end
+        if path.y > love.graphics:getHeight() then path.y = 2 * love.graphics:getHeight() - path.y end
+      end
     -- else, checks if mouse is on the ball
     elseif
     mousePos.x < (ballPos.x + ballRad) and
@@ -100,9 +112,16 @@ function Table:update(dt)
 end
 
 function Table:draw()
+  if playing then 
+    for i, path in ipairs(path) do
+      love.graphics.setColor(1, 1, 1, 0.85 - i*0.02)
+      love.graphics.circle("fill", path.x, path.y, path.r)
+      love.graphics.setColor(1, 1, 1, 1)
+    end
+  end
   for _, ball in ipairs(bodies) do ball:draw() end
   for _, bound in ipairs(bounds) do 
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(255, 255, 255, 1)
     love.graphics.line(bound.body:getWorldPoints(bound.shape:getPoints()))
   end
   if playing then love.graphics.line(start.x, start.y, final.x, final.y) end
