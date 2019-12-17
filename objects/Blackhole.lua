@@ -2,10 +2,10 @@ local Blackhole = Object:extend()
 
 function Blackhole:new(world, x, y, r, m)
   self.body = love.physics.newBody(world, x, y)
-  self.body:setMass(m)
   self.shape = love.physics.newCircleShape(r)
   self.fixture = love.physics.newFixture(self.body, self.shape)
   self.fixture:setUserData('blackhole')
+  self.mass = m
 end
 
 function Blackhole:update(dt)

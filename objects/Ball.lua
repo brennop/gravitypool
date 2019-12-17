@@ -11,6 +11,7 @@ function Ball:new(world, x, y, r, m, t)
   self.fixture:setUserData(t)
   self.fixture:setRestitution(0.8)
   self.color = colors[t]
+  self.mass = m
 end
 
 function Ball:update(dt)
