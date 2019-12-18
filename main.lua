@@ -6,7 +6,6 @@ local Table = require 'objects/Table'
 
 -- global variable for debug displaying
 debug = {}
-local nStars = 350
 
 function love.load()
   scene = Table()
@@ -15,18 +14,16 @@ function love.load()
   bloom = moonshine(moonshine.effects.glow)
   bloom.glow.strength = 12
   bloom.glow.min_luma = 0.4
-  stars = {}
-  for i = 1, nStars, 1 do
-    stars[i] = {x = math.random(0, love.graphics:getWidth()), y = math.random(0, love.graphics:getHeight()), r = math.random()*1.5}
-  end
-  starCanvas = love.graphics.newCanvas()
-  love.graphics.setCanvas(starCanvas)
-      love.graphics.setColor(1, 1, 1, 0.75)
-      for _,star in ipairs(stars) do
-        love.graphics.circle("fill", star.x, star.y, star.r)
-      end
+
+  -- draws background starfield
+  starfield = love.graphics.newCanvas()
+  starShader = love.graphics.newShader('shaders/starfield.glsl')
+  starShader:send("screen", {love.graphics:getWidth(), love.graphics:getHeight()})
+  love.graphics.setCanvas(starfield)
+  love.graphics.setShader(starShader) 
+  love.graphics.draw(love.graphics.newCanvas())
+  love.graphics.setShader()
   love.graphics.setCanvas()
-  -- bloom.disable("glow")
 end
 
 function love.update(dt)
@@ -34,9 +31,8 @@ function love.update(dt)
 end
 
 function love.draw()
-  bloom(function()
-    love.graphics.draw(starCanvas)
-  end)
+  love.graphics.draw(starfield)
+
   scene:draw()
 
   for index,value in ipairs(debug) do
