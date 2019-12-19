@@ -119,7 +119,7 @@ function Table:draw()
       love.graphics.setColor(1, 1, 1, 1)
     end
   end
-  for _, ball in ipairs(bodies) do ball:draw() end
+  for _, body in ipairs(bodies) do body:draw() end
   for _, bound in ipairs(bounds) do 
     love.graphics.setColor(255, 255, 255, 1)
     love.graphics.line(bound.body:getWorldPoints(bound.shape:getPoints()))
