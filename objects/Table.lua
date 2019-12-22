@@ -125,8 +125,8 @@ function Table:draw()
     love.graphics.line(bound.body:getWorldPoints(bound.shape:getPoints()))
   end
   if playing then love.graphics.line(start.x, start.y, final.x, final.y) end
-  debug[1] = 'red: '..score['red']
-  debug[2] = 'yellow: '..score['yellow']
+  -- debug[1] = 'red: '..score['red']
+  -- debug[2] = 'yellow: '..score['yellow']
 end
 
 function beginContact(a, b, coll)
