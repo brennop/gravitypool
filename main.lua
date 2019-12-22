@@ -12,12 +12,11 @@ function love.load()
   love.graphics.setColor(255, 255, 255)
   love.graphics.setBackgroundColor(8/255, 2/255, 22/255, 1)
   bloom = moonshine(moonshine.effects.glow)
-  bloom.glow.strength = 4
+  bloom.glow.strength = 2
 
   -- draws background starfield
   starfield = love.graphics.newCanvas()
   starShader = love.graphics.newShader('shaders/starfield.glsl')
-  starShader:send("screen", {love.graphics:getWidth(), love.graphics:getHeight()})
   love.graphics.setCanvas(starfield)
   love.graphics.setShader(starShader) 
   love.graphics.draw(love.graphics.newCanvas())
