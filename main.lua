@@ -7,10 +7,22 @@ local Table = require 'objects/Table'
 -- global variable for debug displaying
 debug = {}
 
+local shader_code = [[
+extern vec2 pos;
+extern vec2 ratio;
+vec4 effect( vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords ) {
+  vec2 offset = texture_coords - pos;
+  float rad = length(offset/ratio);
+  float deformation = 1/pow(rad*pow(3, 0.5), 2) * 0.0015 * 2;
+  offset *= (1-deformation);
+  offset += pos;
+  return Texel(tex, offset);
+}
+]]
+
 function love.load()
   scene = Table()
   love.graphics.setColor(255, 255, 255)
-  love.graphics.setBackgroundColor(8/255, 2/255, 22/255, 1)
   bloom = moonshine(moonshine.effects.glow)
   bloom.glow.strength = 2
 
@@ -22,6 +34,10 @@ function love.load()
   love.graphics.draw(love.graphics.newCanvas())
   love.graphics.setShader()
   love.graphics.setCanvas()
+
+  shader = love.graphics.newShader(shader_code)
+  shader:send("ratio", {love.graphics:getHeight() / love.graphics:getWidth(), 1})
+  canvas = love.graphics.newCanvas()
 end
 
 function love.update(dt)
@@ -29,11 +45,19 @@ function love.update(dt)
 end
 
 function love.draw()
-  bloom(function() 
+  love.graphics.setCanvas(canvas)
+  love.graphics.clear()
+  -- bloom(function() 
     love.graphics.draw(starfield)
-  end)
+  -- end)
 
   scene:draw()
+  love.graphics.setCanvas()
+
+  love.graphics.setShader(shader)
+  shader:send("pos", {0.5, 0.5})
+  love.graphics.draw(canvas)
+  love.graphics.setShader()
 
   for index,value in ipairs(debug) do
     love.graphics.print(value, 10, 10 + index*10)
