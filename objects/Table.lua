@@ -18,6 +18,9 @@ function Table:new()
   world:setCallbacks(beginContact, endContact, preSolve, postSolve)
   ball = Ball(world, love.graphics:getWidth() * 0.25,
   love.graphics:getHeight()/2, 10, 0.6, 'white')
+  -- category 1
+  -- mask set to 1 (walls) and 2 (balls)
+  ball.fixture:setFilterData(1, 3, 0)
 
   bodies = {}
   bodies[1] = ball
@@ -44,7 +47,7 @@ function Table:new()
     bounds[i].fixture = love.physics.newFixture(bounds[i].body, bounds[i].shape)
     bounds[i].fixture:setUserData('bound')
     -- creates blackholes
-    table.insert(bodies, Blackhole(world, boundPos.x + offset * boundDir.x + offset * boundDir.y, boundPos.y - offset * boundDir.x + offset * boundDir.y, 5, 1))
+    table.insert(bodies, Blackhole(world, boundPos.x + offset * boundDir.x + offset * boundDir.y, boundPos.y - offset * boundDir.x + offset * boundDir.y, 0.01, 3))
     boundPos = newPos
     boundDir:rotateInplace(-math.pi/2)
   end
@@ -109,6 +112,18 @@ function Table:update(dt)
     hit(ball.body)
     playing = false
   end
+
+  -- checks if ball has fallen
+  -- should use separate tables for balls / blackholes to simplify code
+  -- for _, ball in ipairs(M.initial(M.rest(bodies, 2), 4)) do
+  --   for _, bh in ipairs(M.last(bodies, 4)) do 
+  --     if ball.body and math.abs(ball.body:getX() - bh.body:getX()) < 0.2 and math.abs(ball.body:getY() - ball.body:getY()) < 0.2 then
+  --       score[ball.fixture:getUserData()] = score[ball.fixture:getUserData()] + 1  
+  --       bodies = M.reject(bodies, function(b) return ball.body == b.body end)
+  --       -- ball.body:destroy()
+  --     end
+  --   end
+  -- end
 end
 
 function Table:draw()
@@ -125,8 +140,8 @@ function Table:draw()
     love.graphics.line(bound.body:getWorldPoints(bound.shape:getPoints()))
   end
   if playing then love.graphics.line(start.x, start.y, final.x, final.y) end
-  -- debug[1] = 'red: '..score['red']
-  -- debug[2] = 'yellow: '..score['yellow']
+  debug[1] = 'red: '..score['red']
+  debug[2] = 'yellow: '..score['yellow']
 end
 
 function beginContact(a, b, coll)

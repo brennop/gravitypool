@@ -11,6 +11,7 @@ function Ball:new(world, x, y, r, m, t)
   self.fixture = love.physics.newFixture(self.body, self.shape)
   self.fixture:setUserData(t)
   self.fixture:setRestitution(0.8)
+  self.fixture:setFilterData(2, 3, 0)
   self.color = colors[t]
   self.mass = m
   self.radius = r
